@@ -2,8 +2,8 @@ version: 2.1
 jobs:
   probe:
     machine:
-      image: linux-cuda-12:default
-    resource_class: gpu.nvidia.medium
+      image: ubuntu-2404:current
+    resource_class: medium
     steps:
       - run:
           name: Probe GPU, KVM, Docker, disk
