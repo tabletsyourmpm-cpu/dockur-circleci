@@ -1,2 +1,2 @@
 # dockur-circleci
-☁️ Free Windows 10 Cloud Desktop - Run Windows in your browser without installation | Self-hosted virtual PC
+☁️ Free Windows 11 Cloud Desktop - Run Windows in your browser without installation | Self-hosted virtual PC
