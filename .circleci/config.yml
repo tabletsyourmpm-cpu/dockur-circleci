@@ -1,0 +1,20 @@
+version: 2.1
+jobs:
+  probe:
+    machine:
+      image: linux-cuda-12:default
+    resource_class: gpu.nvidia.medium
+    steps:
+      - run:
+          name: Probe GPU, KVM, Docker, disk
+          command: |
+            nvidia-smi || echo NO-NVIDIA-SMI
+            ls -l /dev/kvm /dev/net/tun /dev/dri 2>&1 || true
+            grep -c -E 'vmx|svm' /proc/cpuinfo || true
+            nproc; free -h; df -h /
+            sudo docker info >/dev/null 2>&1 && echo DOCKER-OK || echo NO-DOCKER
+            vulkaninfo --summary 2>/dev/null | head -20 || echo no-vulkan
+workflows:
+  test:
+    jobs:
+      - probe
