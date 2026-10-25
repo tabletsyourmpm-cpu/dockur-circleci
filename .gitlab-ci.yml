@@ -1,0 +1,46 @@
+# GitLab hosted-runner probe for Sans (prepped 2026-10-24).
+# Goal: settle GPU / KVM / Docker / disk facts with a 2-minute job instead of guessing.
+#
+# probe-default: untagged, runs on the small free Linux hosted runner.
+#   Also answers: does a new free account's pipeline run at all (verification gate)?
+# probe-gpu: manual + allow_failure on purpose. GitLab's own docs list GPU-enabled
+#   hosted runners as Premium/Ultimate tier, so on a Free account this job is
+#   expected to sit pending or be refused - that IS the answer if it happens.
+#   If it does run: 4 vCPU / 15 GB RAM / 50 GB disk / 1x NVIDIA Tesla T4 16 GB.
+
+stages:
+  - probe
+
+probe-default:
+  stage: probe
+  image: alpine:latest
+  script:
+    - echo "== who =="; whoami; hostname
+    - nvidia-smi || echo NO-NVIDIA-SMI
+    - ls -l /dev/kvm /dev/net/tun 2>&1 || true
+    - ls -l /dev/dri 2>&1 || true
+    - ls /dev/nvidia* 2>&1 || true
+    - grep -c -E 'vmx|svm' /proc/cpuinfo || true
+    - nproc || true
+    - grep MemTotal /proc/meminfo || true
+    - df -h / || true
+    - docker info >/dev/null 2>&1 && echo DOCKER-OK || echo NO-DOCKER
+
+probe-gpu:
+  stage: probe
+  tags:
+    - saas-linux-medium-amd64-gpu-standard
+  image: nvcr.io/nvidia/cuda:12.1.1-base-ubuntu22.04
+  when: manual
+  allow_failure: true
+  script:
+    - echo "== who =="; whoami; hostname
+    - nvidia-smi || echo NO-NVIDIA-SMI
+    - ls -l /dev/kvm /dev/net/tun 2>&1 || true
+    - ls -l /dev/dri 2>&1 || true
+    - ls /dev/nvidia* 2>&1 || true
+    - grep -c -E 'vmx|svm' /proc/cpuinfo || true
+    - nproc || true
+    - grep MemTotal /proc/meminfo || true
+    - df -h / || true
+    - docker info >/dev/null 2>&1 && echo DOCKER-OK || echo NO-DOCKER
